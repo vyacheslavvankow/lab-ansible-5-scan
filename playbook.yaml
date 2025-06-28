@@ -1,0 +1,21 @@
+---
+- name: Scan targets
+  hosts: scanners
+  become: true
+
+  tasks:
+    - name: Ensure NMAP installed
+      ansible.builtin.apt:
+        name: nmap
+        state: present
+
+    - name: Scan
+      ansible.builtin.command: "nmap {{ item }} -p 80,443 -oG -"
+     # ansible.builtin.debug: { msg: "{{ item  }}" }
+      loop: "{{ lookup('file', './targets.txt').splitlines()  }}"
+      register: scan_results
+
+    - name: Scan result
+      ansible.builtin.debug:
+        msg: "{{ item.stdout_lines }}"
+      loop: "{{ scan_results.results }}"
